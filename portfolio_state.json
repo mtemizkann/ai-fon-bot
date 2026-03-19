@@ -1,0 +1,27 @@
+{
+  "cash": 0.009999999999763531,
+  "peak_value": 10000.0,
+  "last_report_hash": "bbd36704c959c9f0b8c8048f8665d329a82de8add8ce5630d7cc910753d9ee73",
+  "positions": {
+    "HIS": {
+      "code": "HIS",
+      "units": 106.72358591248667,
+      "last_price": 37.48
+    },
+    "ALT": {
+      "code": "ALT",
+      "units": 162.92494481236204,
+      "last_price": 13.59
+    },
+    "DEG": {
+      "code": "DEG",
+      "units": 84.44126984126986,
+      "last_price": 18.9
+    },
+    "PPF": {
+      "code": "PPF",
+      "units": 2112.9872636047858,
+      "last_price": 1.0364
+    }
+  }
+}

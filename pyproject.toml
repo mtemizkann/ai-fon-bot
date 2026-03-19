@@ -1,0 +1,14 @@
+[project]
+name = "ai-fon-bot"
+version = "0.1.0"
+description = "Autonomous Turkish fund allocation engine with paper/live-ready broker adapters."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+fon-bot = "fon_ai_bot.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
