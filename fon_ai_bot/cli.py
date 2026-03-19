@@ -40,14 +40,28 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     config = load_config(args.config)
+    notifier = TelegramNotifier() if args.notify == "telegram" else None
 
     portfolio = load_or_create_portfolio(args.state, config)
     update_peak(portfolio)
 
     engine = AllocationEngine(config)
     if config.source == "tefas":
-        snapshots = load_tefas_snapshots(config)
-        report = engine.evaluate_snapshots(snapshots, portfolio)
+        try:
+            snapshots = load_tefas_snapshots(config)
+            report = engine.evaluate_snapshots(snapshots, portfolio)
+        except Exception as exc:
+            message = (
+                "AI Fon Bot Raporu\n"
+                "TEFAS verisi bugun alinamadi.\n"
+                f"Sebep: {exc}\n"
+                "Bugun islem yapilmadi, mevcut portfoy korunuyor."
+            )
+            print(message)
+            if notifier:
+                notifier.send(message)
+            save_portfolio(args.state, portfolio)
+            return
     else:
         if not args.prices:
             raise ValueError("CSV kaynak kullanimi icin --prices zorunludur")
@@ -99,7 +113,7 @@ def main() -> None:
         message = format_report(report, portfolio)
         signature = report_hash(report)
         if signature != portfolio.last_report_hash:
-            notifier = TelegramNotifier()
+            assert notifier is not None
             notifier.send(message)
             portfolio.last_report_hash = signature
             print("")

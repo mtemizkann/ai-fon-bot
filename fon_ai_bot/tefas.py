@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import re
+import ssl
 import subprocess
 import urllib.parse
 import urllib.request
@@ -35,16 +36,39 @@ def fetch_fund_page(code: str) -> str:
         },
     )
     try:
-        with urllib.request.urlopen(request, timeout=20) as response:
+        with urllib.request.urlopen(request, timeout=30) as response:
             return response.read().decode("utf-8", "ignore")
     except URLError:
+        insecure_context = ssl.create_default_context()
+        insecure_context.check_hostname = False
+        insecure_context.verify_mode = ssl.CERT_NONE
+        try:
+            with urllib.request.urlopen(request, timeout=30, context=insecure_context) as response:
+                return response.read().decode("utf-8", "ignore")
+        except URLError:
+            pass
+
+    try:
         result = subprocess.run(
-            ["curl", "-sSL", url],
+            [
+                "curl",
+                "-fsSL",
+                "--retry",
+                "3",
+                "--retry-delay",
+                "2",
+                "-A",
+                "Mozilla/5.0",
+                url,
+            ],
             check=True,
             capture_output=True,
             text=True,
+            timeout=30,
         )
         return result.stdout
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        raise ValueError(f"sayfa cekilemedi: {exc}") from exc
 
 
 def fetch_snapshot(rule: FundRule) -> FundSnapshot:
@@ -102,6 +126,15 @@ def fetch_snapshot(rule: FundRule) -> FundSnapshot:
 
 def load_tefas_snapshots(config: BotConfig) -> list[FundSnapshot]:
     snapshots: list[FundSnapshot] = []
+    errors: list[str] = []
     for rule in config.universe:
-        snapshots.append(fetch_snapshot(rule))
+        try:
+            snapshots.append(fetch_snapshot(rule))
+        except Exception as exc:
+            errors.append(f"{rule.code}: {exc}")
+            continue
+
+    if not snapshots:
+        joined = "; ".join(errors) if errors else "bilinmeyen hata"
+        raise ValueError(f"TEFAS verisi alinamadi: {joined}")
     return snapshots
