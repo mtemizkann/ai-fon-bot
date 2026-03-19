@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: ${{ github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -43,6 +44,12 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout "${GITHUB_REF_NAME}"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
           git add portfolio_state.json
+          if git diff --cached --quiet; then
+            echo "No staged changes to commit after rebase."
+            exit 0
+          fi
           git commit -m "chore: update fund bot state"
-          git push
+          git push origin "HEAD:${GITHUB_REF_NAME}"
