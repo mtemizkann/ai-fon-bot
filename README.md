@@ -75,8 +75,11 @@ python3 -m fon_ai_bot.cli \
 Canli TEFAS modunda repodaki gercek fon evreni:
 
 - `AFT`
+- `AFA`
 - `IPB`
+- `FUA`
 - `TTA`
+- `GUM`
 - `PPN`
 
 ## Telegram Bildirimi

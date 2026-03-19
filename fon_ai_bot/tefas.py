@@ -9,7 +9,7 @@ import urllib.request
 from datetime import date
 from urllib.error import URLError
 
-from .models import BotConfig, FundRule, FundSnapshot
+from .models import BotConfig, FundRule, FundSnapshot, Portfolio
 
 
 def _parse_tr_number(raw: str) -> float:
@@ -121,20 +121,72 @@ def fetch_snapshot(rule: FundRule) -> FundSnapshot:
         volatility=volatility_proxy,
         drawdown=drawdown_proxy,
         score=score,
+        category=rule.category,
+        name=name,
+        risk_value=risk_value,
+        ret_3m=ret_3m / 100.0,
+        ret_6m=ret_6m / 100.0,
+        source="tefas",
     )
 
 
-def load_tefas_snapshots(config: BotConfig) -> list[FundSnapshot]:
+def _snapshot_to_cache(snapshot: FundSnapshot) -> dict:
+    return {
+        "code": snapshot.code,
+        "as_of": snapshot.as_of.isoformat(),
+        "price": snapshot.price,
+        "ret_short": snapshot.ret_short,
+        "ret_medium": snapshot.ret_medium,
+        "volatility": snapshot.volatility,
+        "drawdown": snapshot.drawdown,
+        "score": snapshot.score,
+        "category": snapshot.category,
+        "name": snapshot.name,
+        "risk_value": snapshot.risk_value,
+        "ret_3m": snapshot.ret_3m,
+        "ret_6m": snapshot.ret_6m,
+        "source": snapshot.source,
+    }
+
+
+def _snapshot_from_cache(payload: dict) -> FundSnapshot:
+    return FundSnapshot(
+        code=payload["code"],
+        as_of=date.fromisoformat(payload["as_of"]),
+        price=float(payload["price"]),
+        ret_short=float(payload["ret_short"]),
+        ret_medium=float(payload["ret_medium"]),
+        volatility=float(payload["volatility"]),
+        drawdown=float(payload["drawdown"]),
+        score=float(payload["score"]),
+        category=str(payload.get("category", "")),
+        name=str(payload.get("name", "")),
+        risk_value=float(payload.get("risk_value", 0.0)),
+        ret_3m=float(payload.get("ret_3m", 0.0)),
+        ret_6m=float(payload.get("ret_6m", 0.0)),
+        source=str(payload.get("source", "cache")),
+    )
+
+
+def load_tefas_snapshots(config: BotConfig, portfolio: Portfolio | None = None) -> tuple[list[FundSnapshot], list[str]]:
     snapshots: list[FundSnapshot] = []
     errors: list[str] = []
     for rule in config.universe:
         try:
-            snapshots.append(fetch_snapshot(rule))
+            snapshot = fetch_snapshot(rule)
+            snapshots.append(snapshot)
+            if portfolio is not None:
+                portfolio.snapshot_cache[rule.code] = _snapshot_to_cache(snapshot)
         except Exception as exc:
+            cache_payload = portfolio.snapshot_cache.get(rule.code) if portfolio is not None else None
+            if cache_payload:
+                snapshots.append(_snapshot_from_cache(cache_payload))
+                errors.append(f"{rule.code}: canli veri yerine cache kullanildi")
+                continue
             errors.append(f"{rule.code}: {exc}")
             continue
 
     if not snapshots:
         joined = "; ".join(errors) if errors else "bilinmeyen hata"
         raise ValueError(f"TEFAS verisi alinamadi: {joined}")
-    return snapshots
+    return snapshots, errors

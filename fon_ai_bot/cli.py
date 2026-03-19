@@ -6,6 +6,7 @@ from .broker import PaperBroker
 from .config import load_config
 from .data import load_price_history
 from .engine import AllocationEngine
+from .journal import record_orders, record_portfolio_snapshot
 from .reporting import format_report, report_hash
 from .risk import update_peak
 from .state import load_or_create_portfolio, save_portfolio
@@ -48,8 +49,10 @@ def main() -> None:
     engine = AllocationEngine(config)
     if config.source == "tefas":
         try:
-            snapshots = load_tefas_snapshots(config)
+            snapshots, tefas_errors = load_tefas_snapshots(config, portfolio)
             report = engine.evaluate_snapshots(snapshots, portfolio)
+            if tefas_errors:
+                report.warnings.extend(tefas_errors[:5])
         except Exception as exc:
             message = (
                 "AI Fon Bot Raporu\n"
@@ -99,6 +102,7 @@ def main() -> None:
         broker = PaperBroker()
         latest_prices = {snapshot.code: snapshot.price for snapshot in report.snapshots}
         broker.execute(portfolio, latest_prices, report.orders)
+        record_orders(portfolio, report)
         print("")
         print("Paper Broker Sonrasi:")
         print(f"- Nakit: {portfolio.cash:,.2f} TL")
@@ -108,6 +112,8 @@ def main() -> None:
                 f"fiyat={position.last_price:.4f} deger={position.market_value:,.2f} TL"
             )
         print(f"- Toplam: {portfolio.total_value():,.2f} TL")
+
+    record_portfolio_snapshot(portfolio, report)
 
     if args.notify == "telegram":
         message = format_report(report, portfolio)

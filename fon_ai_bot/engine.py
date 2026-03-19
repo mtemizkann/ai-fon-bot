@@ -40,6 +40,7 @@ class AllocationEngine:
 
         target_weights = self._build_target_weights(snapshots, halted)
         orders = self._rebalance_orders(portfolio, latest_prices, target_weights, universe_map)
+        insights, warnings = self._build_commentary(snapshots, target_weights, halted)
 
         return DecisionReport(
             as_of=max(item.as_of for item in snapshots),
@@ -49,6 +50,8 @@ class AllocationEngine:
             portfolio_value=portfolio.total_value(),
             current_drawdown=drawdown_now,
             halted=halted,
+            insights=insights,
+            warnings=warnings,
         )
 
     def _build_target_weights(
@@ -109,6 +112,42 @@ class AllocationEngine:
         if cash_code:
             target_weights[cash_code] = target_weights.get(cash_code, 0.0) + leftover
         return target_weights
+
+    def _build_commentary(
+        self,
+        snapshots: list[FundSnapshot],
+        target_weights: dict[str, float],
+        halted: bool,
+    ) -> tuple[list[str], list[str]]:
+        rule_map = {rule.code: rule for rule in self.config.universe}
+        ranked = sorted(snapshots, key=lambda item: item.score, reverse=True)
+        insights: list[str] = []
+        warnings: list[str] = []
+
+        if halted:
+            warnings.append("portfoy zarar freni devrede, sistem savunma modunda")
+
+        for snapshot in ranked[:3]:
+            category = rule_map.get(snapshot.code).category if snapshot.code in rule_map else snapshot.category
+            if snapshot.code in target_weights and target_weights[snapshot.code] > 0.0:
+                insights.append(
+                    f"{snapshot.code} secildi: kategori={category}, 3A={snapshot.ret_3m:.2%}, 1Y={snapshot.ret_medium:.2%}"
+                )
+            if snapshot.ret_short < 0 and snapshot.ret_medium > 0:
+                warnings.append(f"{snapshot.code} uzun vadede guclu ama kisa vadede geri cekiliyor")
+            if snapshot.ret_3m < 0 and snapshot.ret_6m < 0:
+                warnings.append(f"{snapshot.code} momentum kaybi yasiyor")
+
+        empty_categories = [
+            rule.category
+            for rule in self.config.universe
+            if rule.category != "cash"
+            and all(item.code not in target_weights or target_weights.get(item.code, 0.0) == 0.0 for item in snapshots if item.category == rule.category)
+        ]
+        if empty_categories:
+            warnings.append("bazı kategoriler disarida kaldı: " + ", ".join(sorted(set(empty_categories))))
+
+        return insights[:4], warnings[:5]
 
     def _rebalance_orders(
         self,

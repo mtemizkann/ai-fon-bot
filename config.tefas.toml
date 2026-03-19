@@ -23,9 +23,23 @@ min_weight = 0.0
 max_weight = 0.40
 
 [[universe]]
+code = "AFA"
+name = "AK Portfoy Amerika Yabanci Hisse"
+category = "foreign_equity"
+min_weight = 0.0
+max_weight = 0.35
+
+[[universe]]
 code = "IPB"
 name = "Istanbul Portfoy Birinci Degisken"
 category = "balanced"
+min_weight = 0.0
+max_weight = 0.35
+
+[[universe]]
+code = "FUA"
+name = "AK Portfoy Ihracatci Sirketler Hisse"
+category = "equity"
 min_weight = 0.0
 max_weight = 0.35
 
@@ -35,6 +49,13 @@ name = "Is Portfoy Altin"
 category = "gold"
 min_weight = 0.0
 max_weight = 0.30
+
+[[universe]]
+code = "GUM"
+name = "AK Portfoy Gumus Fon Sepeti"
+category = "silver"
+min_weight = 0.0
+max_weight = 0.20
 
 [[universe]]
 code = "PPN"

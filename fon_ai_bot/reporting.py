@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 
+from .journal import summarize_performance
 from .models import DecisionReport, Portfolio
 
 
@@ -41,8 +42,26 @@ def format_report(report: DecisionReport, portfolio: Portfolio) -> str:
     for snapshot in report.snapshots[:3]:
         lines.append(
             f"- {snapshot.code}: skor {snapshot.score:.3f} | "
-            f"1A {snapshot.ret_short:.2%} | 1Y {snapshot.ret_medium:.2%}"
+            f"1A {snapshot.ret_short:.2%} | 3A {snapshot.ret_3m:.2%} | 1Y {snapshot.ret_medium:.2%}"
         )
+
+    lines.append("")
+    perf_day, perf_total = summarize_performance(portfolio)
+    lines.append("Performans:")
+    lines.append(f"- {perf_day}")
+    lines.append(f"- {perf_total}")
+
+    if report.insights:
+        lines.append("")
+        lines.append("Yorum:")
+        for item in report.insights:
+            lines.append(f"- {item}")
+
+    if report.warnings:
+        lines.append("")
+        lines.append("Uyarilar:")
+        for item in report.warnings:
+            lines.append(f"- {item}")
 
     lines.append("")
     lines.append("Mevcut Pozisyonlar:")
@@ -61,5 +80,6 @@ def report_hash(report: DecisionReport) -> str:
         "halted": report.halted,
         "orders": [(order.code, order.action, round(order.amount_try, 2)) for order in report.orders],
         "weights": sorted((code, round(weight, 4)) for code, weight in report.target_weights.items()),
+        "warnings": report.warnings,
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()

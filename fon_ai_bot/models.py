@@ -47,6 +47,12 @@ class FundSnapshot:
     volatility: float
     drawdown: float
     score: float
+    category: str = ""
+    name: str = ""
+    risk_value: float = 0.0
+    ret_3m: float = 0.0
+    ret_6m: float = 0.0
+    source: str = ""
 
 
 @dataclass(slots=True)
@@ -66,6 +72,9 @@ class Portfolio:
     positions: dict[str, Position] = field(default_factory=dict)
     peak_value: float = 0.0
     last_report_hash: str = ""
+    order_history: list[dict] = field(default_factory=list)
+    performance_history: list[dict] = field(default_factory=list)
+    snapshot_cache: dict[str, dict] = field(default_factory=dict)
 
     def total_value(self) -> float:
         positions_value = sum(position.market_value for position in self.positions.values())
@@ -76,6 +85,9 @@ class Portfolio:
             "cash": self.cash,
             "peak_value": self.peak_value,
             "last_report_hash": self.last_report_hash,
+            "order_history": self.order_history,
+            "performance_history": self.performance_history,
+            "snapshot_cache": self.snapshot_cache,
             "positions": {
                 code: {
                     "code": position.code,
@@ -100,6 +112,9 @@ class Portfolio:
             cash=float(payload["cash"]),
             peak_value=float(payload.get("peak_value", 0.0)),
             last_report_hash=str(payload.get("last_report_hash", "")),
+            order_history=list(payload.get("order_history", [])),
+            performance_history=list(payload.get("performance_history", [])),
+            snapshot_cache=dict(payload.get("snapshot_cache", {})),
             positions=positions,
         )
 
@@ -121,3 +136,5 @@ class DecisionReport:
     portfolio_value: float
     current_drawdown: float
     halted: bool
+    insights: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
