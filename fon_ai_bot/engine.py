@@ -174,7 +174,10 @@ class AllocationEngine:
                         code=code,
                         action="SELL",
                         amount_try=round(diff * total_value, 2),
-                        reason="Target agirligin uzerinde kaldigi icin azalt",
+                        reason=(
+                            f"mevcut agirlik %{current_weights.get(code, 0.0) * 100:.1f}, "
+                            f"hedef agirlik %{target * 100:.1f}; risk azalt"
+                        ),
                     )
                 )
 
@@ -196,7 +199,10 @@ class AllocationEngine:
                         code=code,
                         action="BUY",
                         amount_try=budget,
-                        reason="Skor ve hedef agirlik sinyali nedeniyle al",
+                        reason=(
+                            f"hedef agirlik %{target * 100:.1f}, mevcut agirlik %{current * 100:.1f}; "
+                            "skor ve kategori siralamasi olumlu"
+                        ),
                     )
                 )
                 simulated_cash -= budget

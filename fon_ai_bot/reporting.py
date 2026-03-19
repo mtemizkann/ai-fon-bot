@@ -29,6 +29,7 @@ def format_report(report: DecisionReport, portfolio: Portfolio) -> str:
         for order in report.orders:
             verb = {"BUY": "AL", "SELL": "SAT"}.get(order.action, order.action)
             lines.append(f"- {verb} {order.code}: {order.amount_try:,.2f} TL")
+            lines.append(f"  neden: {order.reason}")
     else:
         lines.append("- Islem yok, mevcut dagilim korunuyor.")
 
