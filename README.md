@@ -1,12 +1,13 @@
 # AI Fon Bot
 
-Bu proje, TEFAS benzeri fon verileriyle calisan otomatik bir portfoy karar motorudur.
+Bu proje, TEFAS verileriyle calisan otomatik bir portfoy karar motorudur.
 Ilk surum, guvenlik icin `paper broker` ile gelir. Canli emir icin ayri `broker adapter`
 eklenir.
 
 ## Neyi Yapar
 
 - Fon fiyat gecmisini CSV dosyasindan okur
+- TEFAS fon analiz sayfalarindan canli veri okuyabilir
 - Momentum, volatilite ve dusus riskine gore skor uretir
 - `AL`, `TUT`, `AZALT`, `SAT` kararlarini verir
 - Portfoyu otomatik yeniden dengeler
@@ -16,7 +17,6 @@ eklenir.
 ## Neyi Henuz Yapmaz
 
 - Banka veya araci kurum hesabina dogrudan baglanmaz
-- TEFAS'tan resmi canli veri cekmez
 - Yatirim danismanligi vermez
 
 ## Strateji Ozet
@@ -61,6 +61,25 @@ python3 -m fon_ai_bot.cli \
 Ilk calistirmada `portfolio_state.json` dosyasi yoksa sistem baslangic nakdi ile yeni portfoy
 olusturur. Sonraki calistirmalarda ayni dosyayi gunceller.
 
+## Canli TEFAS Calistirma
+
+```bash
+cd /Users/merttemizkan/Documents/ai-fon-bot
+python3 -m fon_ai_bot.cli \
+  --config config.tefas.toml \
+  --broker paper \
+  --state portfolio_state_tefas.json \
+  --notify telegram
+```
+
+Canli TEFAS modunda repodaki gercek fon evreni:
+
+- `AFT`
+- `BUY`
+- `AFA`
+- `TTA`
+- `PPN`
+
 ## Telegram Bildirimi
 
 Telegram gonderimi icin su environment variable'lari tanimla:
@@ -74,10 +93,9 @@ Sonra komutu `--notify telegram` ile calistir:
 
 ```bash
 python3 -m fon_ai_bot.cli \
-  --prices sample_prices.csv \
-  --config config.sample.toml \
+  --config config.tefas.toml \
   --broker paper \
-  --state portfolio_state.json \
+  --state portfolio_state_tefas.json \
   --notify telegram
 ```
 
@@ -109,13 +127,13 @@ Varsayilan calisma saati:
 
 - GitHub Actions her gun botu calistirir
 - Telegram raporunu yollar
-- `portfolio_state.json` dosyasi degistiysa repo'ya otomatik commit eder
+- `portfolio_state_tefas.json` dosyasi degistiysa repo'ya otomatik commit eder
 - Boylece state kalici olur ve PC'nin acik kalmasi gerekmez
 
 ### Onemli not
 
-Bu su an `sample_prices.csv` ile calisir. Yani otomasyon hazir, ama veri halen ornek veridir.
-Bir sonraki adimda bunu gercek fon verisine baglamamiz gerekir.
+Varsayilan GitHub Actions akisi `config.tefas.toml` ile canli TEFAS sayfalarini kullanir.
+Ornek CSV akisi ise sadece gelistirme ve test icin repoda tutulur.
 
 ## CSV Formati
 

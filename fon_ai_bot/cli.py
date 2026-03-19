@@ -9,12 +9,13 @@ from .engine import AllocationEngine
 from .reporting import format_report, report_hash
 from .risk import update_peak
 from .state import load_or_create_portfolio, save_portfolio
+from .tefas import load_tefas_snapshots
 from .telegram_notifier import TelegramNotifier
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="AI Fon Bot")
-    parser.add_argument("--prices", required=True, help="CSV fiyat dosyasi")
+    parser.add_argument("--prices", help="CSV fiyat dosyasi")
     parser.add_argument("--config", required=True, help="TOML config dosyasi")
     parser.add_argument(
         "--broker",
@@ -39,13 +40,19 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     config = load_config(args.config)
-    prices = load_price_history(args.prices)
 
     portfolio = load_or_create_portfolio(args.state, config)
     update_peak(portfolio)
 
     engine = AllocationEngine(config)
-    report = engine.evaluate(prices, portfolio)
+    if config.source == "tefas":
+        snapshots = load_tefas_snapshots(config)
+        report = engine.evaluate_snapshots(snapshots, portfolio)
+    else:
+        if not args.prices:
+            raise ValueError("CSV kaynak kullanimi icin --prices zorunludur")
+        prices = load_price_history(args.prices)
+        report = engine.evaluate(prices, portfolio)
 
     print(f"Tarih: {report.as_of.isoformat()}")
     print(f"Portfoy Degeri: {report.portfolio_value:,.2f} TL")

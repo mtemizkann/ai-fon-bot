@@ -11,12 +11,20 @@ class AllocationEngine:
 
     def evaluate(self, price_history: dict[str, list[tuple]], portfolio: Portfolio) -> DecisionReport:
         snapshots: list[FundSnapshot] = []
-        universe_map = {rule.code: rule for rule in self.config.universe}
 
         for rule in self.config.universe:
             if rule.code not in price_history:
                 continue
             snapshots.append(build_snapshot(rule, price_history[rule.code], self.config))
+
+        return self.evaluate_snapshots(snapshots, portfolio)
+
+    def evaluate_snapshots(
+        self,
+        snapshots: list[FundSnapshot],
+        portfolio: Portfolio,
+    ) -> DecisionReport:
+        universe_map = {rule.code: rule for rule in self.config.universe}
 
         if not snapshots:
             raise ValueError("Analiz icin uygun fon verisi bulunamadi")
@@ -46,8 +54,12 @@ class AllocationEngine:
     def _build_target_weights(
         self, snapshots: list[FundSnapshot], halted: bool
     ) -> dict[str, float]:
+        cash_code = next(
+            (rule.code for rule in self.config.universe if rule.category == "cash"),
+            None,
+        )
         if halted:
-            return {"PPF": 1.0}
+            return {cash_code: 1.0} if cash_code else {}
 
         eligible = [
             snapshot
@@ -63,11 +75,11 @@ class AllocationEngine:
         tradable_budget = max(0.0, 1.0 - reserved_cash)
 
         if not selected:
-            return {"PPF": 1.0}
+            return {cash_code: 1.0} if cash_code else {}
 
         raw_total = sum(max(item.score, 0.0) for item in selected)
         if raw_total <= 0:
-            return {"PPF": 1.0}
+            return {cash_code: 1.0} if cash_code else {}
 
         for snapshot in selected:
             rule = next(rule for rule in self.config.universe if rule.code == snapshot.code)
@@ -78,7 +90,8 @@ class AllocationEngine:
 
         current_sum = sum(target_weights.values())
         leftover = max(0.0, 1.0 - current_sum)
-        target_weights["PPF"] = target_weights.get("PPF", 0.0) + leftover
+        if cash_code:
+            target_weights[cash_code] = target_weights.get(cash_code, 0.0) + leftover
         return target_weights
 
     def _rebalance_orders(

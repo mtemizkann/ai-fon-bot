@@ -30,15 +30,14 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           python -m fon_ai_bot.cli \
-            --prices sample_prices.csv \
-            --config config.sample.toml \
+            --config config.tefas.toml \
             --broker paper \
-            --state portfolio_state.json \
+            --state portfolio_state_tefas.json \
             --notify telegram
 
       - name: Commit updated state
         run: |
-          if git diff --quiet -- portfolio_state.json; then
+          if git diff --quiet -- portfolio_state_tefas.json; then
             echo "No state changes to commit."
             exit 0
           fi
@@ -46,7 +45,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout "${GITHUB_REF_NAME}"
           git pull --rebase origin "${GITHUB_REF_NAME}" || true
-          git add portfolio_state.json
+          git add portfolio_state_tefas.json
           if git diff --cached --quiet; then
             echo "No staged changes to commit after rebase."
             exit 0

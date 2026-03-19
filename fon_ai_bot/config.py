@@ -41,4 +41,5 @@ def load_config(path: str | Path) -> BotConfig:
         rebalance_threshold=float(raw["rebalance_threshold"]),
         strategy=strategy,
         universe=universe,
+        source=str(raw.get("source", "csv")),
     )

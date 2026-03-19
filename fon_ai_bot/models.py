@@ -34,6 +34,7 @@ class BotConfig:
     rebalance_threshold: float
     strategy: StrategyConfig
     universe: list[FundRule]
+    source: str = "csv"
 
 
 @dataclass(slots=True)
