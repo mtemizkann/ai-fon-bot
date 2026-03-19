@@ -54,21 +54,37 @@ class AllocationEngine:
     def _build_target_weights(
         self, snapshots: list[FundSnapshot], halted: bool
     ) -> dict[str, float]:
-        cash_code = next(
-            (rule.code for rule in self.config.universe if rule.category == "cash"),
-            None,
-        )
+        rule_map = {rule.code: rule for rule in self.config.universe}
+        cash_code = next((rule.code for rule in self.config.universe if rule.category == "cash"), None)
         if halted:
             return {cash_code: 1.0} if cash_code else {}
 
         eligible = [
             snapshot
             for snapshot in snapshots
-            if snapshot.ret_short > 0 and snapshot.ret_medium > 0 and snapshot.drawdown < 0.12
+            if snapshot.ret_medium > 0
+            and snapshot.drawdown < 0.12
+            and (
+                snapshot.ret_short > 0
+                or (
+                    rule_map[snapshot.code].category == "gold"
+                    and snapshot.ret_short > -0.05
+                )
+            )
         ]
 
         eligible.sort(key=lambda item: item.score, reverse=True)
-        selected = eligible[: self.config.max_funds]
+        non_cash = [item for item in eligible if rule_map[item.code].category != "cash"]
+        selected: list[FundSnapshot] = []
+        used_categories: set[str] = set()
+        for snapshot in non_cash:
+            category = rule_map[snapshot.code].category
+            if category in used_categories:
+                continue
+            selected.append(snapshot)
+            used_categories.add(category)
+            if len(selected) >= self.config.max_funds:
+                break
 
         target_weights: dict[str, float] = {}
         reserved_cash = self.config.cash_buffer_pct
@@ -82,14 +98,14 @@ class AllocationEngine:
             return {cash_code: 1.0} if cash_code else {}
 
         for snapshot in selected:
-            rule = next(rule for rule in self.config.universe if rule.code == snapshot.code)
+            rule = rule_map[snapshot.code]
             weight = tradable_budget * (max(snapshot.score, 0.0) / raw_total)
             weight = min(weight, self.config.max_position_pct, rule.max_weight)
             if weight >= 0.02:
                 target_weights[snapshot.code] = weight
 
         current_sum = sum(target_weights.values())
-        leftover = max(0.0, 1.0 - current_sum)
+        leftover = max(0.0, reserved_cash + (tradable_budget - current_sum))
         if cash_code:
             target_weights[cash_code] = target_weights.get(cash_code, 0.0) + leftover
         return target_weights

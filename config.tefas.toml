@@ -23,16 +23,9 @@ min_weight = 0.0
 max_weight = 0.40
 
 [[universe]]
-code = "BUY"
-name = "AK Portfoy Buyuyen Sirketler Hisse"
-category = "equity"
-min_weight = 0.0
-max_weight = 0.40
-
-[[universe]]
-code = "AFA"
-name = "AK Portfoy Amerika Yabanci Hisse"
-category = "foreign_equity"
+code = "IPB"
+name = "Istanbul Portfoy Birinci Degisken"
+category = "balanced"
 min_weight = 0.0
 max_weight = 0.35
 
