@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from .models import BotConfig, DecisionReport, FundSnapshot, Order, Portfolio
+from datetime import timedelta
+
+from .models import BotConfig, DecisionReport, FundSnapshot, Order, PlaybookItem, Portfolio
 from .risk import current_drawdown, risk_halt_triggered, update_peak
 from .signals import build_snapshot
 
@@ -41,6 +43,13 @@ class AllocationEngine:
         target_weights = self._build_target_weights(snapshots, halted)
         orders = self._rebalance_orders(portfolio, latest_prices, target_weights, universe_map)
         insights, warnings = self._build_commentary(snapshots, target_weights, halted)
+        playbook, avoid_codes = self._build_playbook(
+            portfolio,
+            snapshots,
+            target_weights,
+            orders,
+            universe_map,
+        )
 
         return DecisionReport(
             as_of=max(item.as_of for item in snapshots),
@@ -50,9 +59,94 @@ class AllocationEngine:
             portfolio_value=portfolio.total_value(),
             current_drawdown=drawdown_now,
             halted=halted,
+            playbook=playbook,
+            avoid_codes=avoid_codes,
             insights=insights,
             warnings=warnings,
         )
+
+    def _min_hold_days(self, category: str) -> int:
+        hold_map = {
+            "cash": 7,
+            "gold": 90,
+            "silver": 90,
+            "balanced": 120,
+            "equity": 180,
+            "foreign_equity": 180,
+        }
+        return hold_map.get(category, 90)
+
+    def _exit_rule(self, snapshot: FundSnapshot, category: str) -> str:
+        if category == "cash":
+            return "nakit ihtiyaci dogarsa veya daha guclu bir fon ayni riski daha iyi tasirsa cik"
+        if category in {"gold", "silver"}:
+            return "minimum bekleme suresi dolduktan sonra 3A getiri zayiflayip hedef dagilimdan cikarsa sat"
+        return "minimum bekleme suresi dolduktan sonra 1A ve 3A momentum bozulur ya da hedef dagilimdan cikarsa sat"
+
+    def _build_playbook(
+        self,
+        portfolio: Portfolio,
+        snapshots: list[FundSnapshot],
+        target_weights: dict[str, float],
+        orders: list[Order],
+        universe_map: dict[str, object],
+    ) -> tuple[list[object], list[str]]:
+        ranked = {item.code: item for item in snapshots}
+        order_map = {order.code: order for order in orders}
+        total_value = portfolio.total_value()
+        playbook: list[PlaybookItem] = []
+
+        for code, target in sorted(target_weights.items(), key=lambda item: item[1], reverse=True):
+            if code not in ranked or target <= 0:
+                continue
+            snapshot = ranked[code]
+            rule = universe_map[code]
+            min_hold_days = self._min_hold_days(rule.category)
+            review_on = snapshot.as_of + timedelta(days=min_hold_days)
+            current_position = portfolio.positions.get(code)
+            current_value = current_position.market_value if current_position else 0.0
+            desired_value = round(total_value * target, 2)
+            order = order_map.get(code)
+
+            if order and order.action == "BUY":
+                action = "BUY_NOW"
+                amount_try = order.amount_try
+                entry_timing = "bugun ilk uygun islem saatinde al"
+                why = order.reason
+            elif current_position:
+                action = "HOLD"
+                amount_try = current_value
+                entry_timing = "yeni alim yok, pozisyonu koru"
+                why = (
+                    f"hedef dagilimda kalmaya devam ediyor; mevcut agirlik %{(current_value / total_value) * 100:.1f}"
+                    if total_value
+                    else "hedef dagilimda kalmaya devam ediyor"
+                )
+            else:
+                action = "WATCH"
+                amount_try = desired_value
+                entry_timing = "hedefte ama bugun islem gerekmiyor; bir sonraki raporda tekrar kontrol et"
+                why = "fon secili kaldi ancak rebalance esigi nedeniyle bugun yeni emir olusmadi"
+
+            playbook.append(
+                PlaybookItem(
+                    code=code,
+                    action=action,
+                    amount_try=round(amount_try, 2),
+                    entry_timing=entry_timing,
+                    min_hold_days=min_hold_days,
+                    review_on=review_on,
+                    exit_rule=self._exit_rule(snapshot, rule.category),
+                    why=why,
+                )
+            )
+
+        avoid_codes = [
+            snapshot.code
+            for snapshot in sorted(snapshots, key=lambda item: item.score, reverse=True)
+            if target_weights.get(snapshot.code, 0.0) <= 0.0
+        ]
+        return playbook, avoid_codes[:5]
 
     def _build_target_weights(
         self, snapshots: list[FundSnapshot], halted: bool

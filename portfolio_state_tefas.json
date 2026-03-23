@@ -1,43 +1,9 @@
 {
-  "cash": 0.0,
+  "cash": 10000.0,
   "peak_value": 10000.0,
-  "last_report_hash": "b30dd422f0300fa5d663aaf54d6dae7066af2467160cd1a7f71c40417758d825",
-  "order_history": [
-    {
-      "date": "2026-03-20",
-      "code": "TTA",
-      "action": "BUY",
-      "amount_try": 3000.0,
-      "reason": "hedef agirlik %30.0, mevcut agirlik %0.0; skor ve kategori siralamasi olumlu"
-    },
-    {
-      "date": "2026-03-20",
-      "code": "AFT",
-      "action": "BUY",
-      "amount_try": 3485.5,
-      "reason": "hedef agirlik %34.9, mevcut agirlik %0.0; skor ve kategori siralamasi olumlu"
-    },
-    {
-      "date": "2026-03-20",
-      "code": "PPN",
-      "action": "BUY",
-      "amount_try": 3514.5,
-      "reason": "hedef agirlik %35.1, mevcut agirlik %0.0; skor ve kategori siralamasi olumlu"
-    }
-  ],
-  "performance_history": [
-    {
-      "date": "2026-03-20",
-      "portfolio_value": 10000.0,
-      "drawdown": 0.0,
-      "halted": false,
-      "weights": {
-        "TTA": 0.3,
-        "AFT": 0.3485,
-        "PPN": 0.3515
-      }
-    }
-  ],
+  "last_report_hash": "",
+  "order_history": [],
+  "performance_history": [],
   "snapshot_cache": {
     "AFT": {
       "code": "AFT",
@@ -104,21 +70,5 @@
       "source": "cache"
     }
   },
-  "positions": {
-    "TTA": {
-      "code": "TTA",
-      "units": 3000.0,
-      "last_price": 1.0
-    },
-    "AFT": {
-      "code": "AFT",
-      "units": 4154.627722470153,
-      "last_price": 0.838944
-    },
-    "PPN": {
-      "code": "PPN",
-      "units": 722.1229119151822,
-      "last_price": 4.8669
-    }
-  }
+  "positions": {}
 }

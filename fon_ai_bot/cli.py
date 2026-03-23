@@ -20,8 +20,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", required=True, help="TOML config dosyasi")
     parser.add_argument(
         "--broker",
-        default="paper",
-        choices=["paper"],
+        default="advisory",
+        choices=["paper", "advisory"],
         help="Broker tipi",
     )
     parser.add_argument(
@@ -117,6 +117,10 @@ def main() -> None:
                 f"fiyat={position.last_price:.4f} deger={position.market_value:,.2f} TL"
             )
         print(f"- Toplam: {portfolio.total_value():,.2f} TL")
+    elif args.broker == "advisory":
+        print("")
+        print("Advisory Modu:")
+        print("- Emirler sadece oneridir; portfoy state'i otomatik islenmedi.")
 
     record_portfolio_snapshot(portfolio, report)
 

@@ -128,6 +128,18 @@ class Order:
 
 
 @dataclass(slots=True)
+class PlaybookItem:
+    code: str
+    action: str
+    amount_try: float
+    entry_timing: str
+    min_hold_days: int
+    review_on: date
+    exit_rule: str
+    why: str
+
+
+@dataclass(slots=True)
 class DecisionReport:
     as_of: date
     snapshots: list[FundSnapshot]
@@ -136,5 +148,7 @@ class DecisionReport:
     portfolio_value: float
     current_drawdown: float
     halted: bool
+    playbook: list[PlaybookItem] = field(default_factory=list)
+    avoid_codes: list[str] = field(default_factory=list)
     insights: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)

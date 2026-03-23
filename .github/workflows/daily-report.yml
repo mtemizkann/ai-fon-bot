@@ -36,7 +36,7 @@ jobs:
           fi
           python -m fon_ai_bot.cli \
             --config config.tefas.toml \
-            --broker paper \
+            --broker advisory \
             --state portfolio_state_tefas.json \
             --notify telegram \
             $EXTRA_ARGS

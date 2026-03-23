@@ -25,18 +25,50 @@ def format_report(report: DecisionReport, portfolio: Portfolio) -> str:
         action_title + ":",
     ]
 
-    if report.orders:
+    if report.playbook:
+        for item in report.playbook:
+            if item.action == "BUY_NOW":
+                lines.append(
+                    f"- SIMDI AL {item.code}: {item.amount_try:,.2f} TL | minimum {item.min_hold_days} gun tut"
+                )
+                lines.append(f"  zaman: {item.entry_timing}")
+                lines.append(f"  cikis: {item.exit_rule}")
+                lines.append(f"  gozden gecir: {item.review_on.isoformat()}")
+            elif item.action == "HOLD":
+                lines.append(
+                    f"- POZISYONDA KAL {item.code}: minimum {item.min_hold_days} gunluk plana uygun"
+                )
+                lines.append(f"  zaman: {item.entry_timing}")
+                lines.append(f"  cikis: {item.exit_rule}")
+                lines.append(f"  gozden gecir: {item.review_on.isoformat()}")
+            elif item.action == "WATCH":
+                lines.append(f"- IZLE {item.code}: bugun alim yok, bir sonraki raporu bekle")
+                lines.append(f"  neden: {item.why}")
+    elif report.orders:
         for order in report.orders:
             verb = {"BUY": "AL", "SELL": "SAT"}.get(order.action, order.action)
             lines.append(f"- {verb} {order.code}: {order.amount_try:,.2f} TL")
             lines.append(f"  neden: {order.reason}")
     else:
-        lines.append("- Islem yok, mevcut dagilim korunuyor.")
+        lines.append("- Bugun yeni islem yok, mevcut dagilim korunuyor.")
+
+    if report.avoid_codes:
+        lines.append("")
+        lines.append("Simdilik Uzak Dur:")
+        lines.append("- " + ", ".join(report.avoid_codes))
 
     lines.append("")
     lines.append("Hedef Dagilim:")
     for code, weight in sorted(report.target_weights.items(), key=lambda item: item[1], reverse=True):
         lines.append(f"- {code}: {_fmt_pct(weight)}")
+
+    if report.playbook:
+        lines.append("")
+        lines.append("Portfoy Yonetim Plani:")
+        for item in report.playbook:
+            lines.append(
+                f"- {item.code}: {item.why} | bekleme min {item.min_hold_days} gun | review {item.review_on.isoformat()}"
+            )
 
     lines.append("")
     lines.append("En Guclu Fonlar:")
@@ -51,6 +83,7 @@ def format_report(report: DecisionReport, portfolio: Portfolio) -> str:
     lines.append("Performans:")
     lines.append(f"- {perf_day}")
     lines.append(f"- {perf_total}")
+    lines.append("- beklenen senaryo garanti degildir; kararlar kural bazli olasilik mantigiyla uretilir")
 
     if report.insights:
         lines.append("")
@@ -81,6 +114,17 @@ def report_hash(report: DecisionReport) -> str:
         "halted": report.halted,
         "orders": [(order.code, order.action, round(order.amount_try, 2)) for order in report.orders],
         "weights": sorted((code, round(weight, 4)) for code, weight in report.target_weights.items()),
+        "playbook": [
+            (
+                item.code,
+                item.action,
+                round(item.amount_try, 2),
+                item.min_hold_days,
+                item.review_on.isoformat(),
+            )
+            for item in report.playbook
+        ],
+        "avoid_codes": report.avoid_codes,
         "warnings": report.warnings,
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
