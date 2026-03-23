@@ -111,8 +111,8 @@ Hazir workflow dosyasi: [.github/workflows/daily-report.yml](/Users/merttemizkan
 
 Varsayilan calisma saati:
 
-- Her gun `15:00 UTC`
-- Turkiye saatiyle `18:00`
+- Her gun `06:00 UTC`
+- Turkiye saatiyle `09:00`
 
 ### Kurulum
 
