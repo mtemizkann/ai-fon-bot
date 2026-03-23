@@ -125,6 +125,8 @@ Varsayilan calisma saati:
 5. `Daily Fund Report` workflow'unu gor
 6. Istersen `Run workflow` ile hemen test et
 
+Manuel testlerde istersen `force_notify` secenegiyle ayni rapor olsa bile Telegram'a tekrar mesaj attirabilirsin.
+
 ### Nasil calisir
 
 - GitHub Actions her gun botu calistirir

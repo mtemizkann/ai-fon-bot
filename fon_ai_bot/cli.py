@@ -35,6 +35,11 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["none", "telegram"],
         help="Rapor bildirim tipi",
     )
+    parser.add_argument(
+        "--force-notify",
+        action="store_true",
+        help="Ayni rapor olsa bile bildirimi zorla gonder",
+    )
     return parser
 
 
@@ -118,7 +123,7 @@ def main() -> None:
     if args.notify == "telegram":
         message = format_report(report, portfolio)
         signature = report_hash(report)
-        if signature != portfolio.last_report_hash:
+        if args.force_notify or signature != portfolio.last_report_hash:
             assert notifier is not None
             notifier.send(message)
             portfolio.last_report_hash = signature
