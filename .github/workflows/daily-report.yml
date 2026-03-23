@@ -4,12 +4,6 @@ on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
-    inputs:
-      force_notify:
-        description: "Ayni rapor olsa bile Telegram mesajini zorla gonder"
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: write
@@ -34,7 +28,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          FORCE_NOTIFY: ${{ github.event_name == 'workflow_dispatch' && inputs.force_notify || 'false' }}
+          FORCE_NOTIFY: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
         run: |
           EXTRA_ARGS=""
           if [ "$FORCE_NOTIFY" = "true" ]; then

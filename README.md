@@ -125,7 +125,8 @@ Varsayilan calisma saati:
 5. `Daily Fund Report` workflow'unu gor
 6. Istersen `Run workflow` ile hemen test et
 
-Manuel testlerde istersen `force_notify` secenegiyle ayni rapor olsa bile Telegram'a tekrar mesaj attirabilirsin.
+Manuel `Run workflow` calistirmalari ayni rapor olsa bile Telegram mesajini tekrar yollar.
+Zamanlanmis sabah calismalarinda ise spam korumasi devam eder.
 
 ### Nasil calisir
 
