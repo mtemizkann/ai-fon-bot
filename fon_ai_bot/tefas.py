@@ -180,8 +180,10 @@ def load_tefas_snapshots(config: BotConfig, portfolio: Portfolio | None = None) 
         except Exception as exc:
             cache_payload = portfolio.snapshot_cache.get(rule.code) if portfolio is not None else None
             if cache_payload:
-                snapshots.append(_snapshot_from_cache(cache_payload))
-                errors.append(f"{rule.code}: canli veri yerine cache kullanildi")
+                cached = _snapshot_from_cache(cache_payload)
+                snapshots.append(cached)
+                age_days = (date.today() - cached.as_of).days
+                errors.append(f"{rule.code}: canli veri yerine {age_days} gunluk cache kullanildi")
                 continue
             errors.append(f"{rule.code}: {exc}")
             continue

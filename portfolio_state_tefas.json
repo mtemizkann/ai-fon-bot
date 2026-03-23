@@ -1,9 +1,124 @@
 {
-  "cash": 10000.0,
+  "cash": 0.0,
   "peak_value": 10000.0,
   "last_report_hash": "",
-  "order_history": [],
-  "performance_history": [],
-  "snapshot_cache": {},
-  "positions": {}
+  "order_history": [
+    {
+      "date": "2026-03-20",
+      "code": "TTA",
+      "action": "BUY",
+      "amount_try": 3000.0,
+      "reason": "hedef agirlik %30.0, mevcut agirlik %0.0; skor ve kategori siralamasi olumlu"
+    },
+    {
+      "date": "2026-03-20",
+      "code": "AFT",
+      "action": "BUY",
+      "amount_try": 3485.5,
+      "reason": "hedef agirlik %34.9, mevcut agirlik %0.0; skor ve kategori siralamasi olumlu"
+    },
+    {
+      "date": "2026-03-20",
+      "code": "PPN",
+      "action": "BUY",
+      "amount_try": 3514.5,
+      "reason": "hedef agirlik %35.1, mevcut agirlik %0.0; skor ve kategori siralamasi olumlu"
+    }
+  ],
+  "performance_history": [
+    {
+      "date": "2026-03-20",
+      "portfolio_value": 10000.0,
+      "drawdown": 0.0,
+      "halted": false,
+      "weights": {
+        "TTA": 0.3,
+        "AFT": 0.3485,
+        "PPN": 0.3515
+      }
+    }
+  ],
+  "snapshot_cache": {
+    "AFT": {
+      "code": "AFT",
+      "as_of": "2026-03-20",
+      "price": 0.838944,
+      "ret_short": 0.02408656,
+      "ret_medium": 0.66577449,
+      "volatility": 0.8571428571,
+      "drawdown": 0.0,
+      "score": 0.2283,
+      "category": "foreign_equity",
+      "name": "AK PORTFOY YENI TEKNOLOJILER YABANCI HISSE SENEDI FONU",
+      "risk_value": 6.0,
+      "ret_3m": 0.01570021,
+      "ret_6m": 0.10489571,
+      "source": "cache"
+    },
+    "AFA": {
+      "code": "AFA",
+      "as_of": "2026-03-20",
+      "price": 1.0,
+      "ret_short": -0.00827471,
+      "ret_medium": 0.4433,
+      "volatility": 0.8571428571,
+      "drawdown": 0.04,
+      "score": 0.1282,
+      "category": "foreign_equity",
+      "name": "AK PORTFOY AMERIKA YABANCI HISSE SENEDI FONU",
+      "risk_value": 6.0,
+      "ret_3m": 0.041,
+      "ret_6m": 0.114,
+      "source": "cache"
+    },
+    "TTA": {
+      "code": "TTA",
+      "as_of": "2026-03-20",
+      "price": 1.0,
+      "ret_short": -0.02659217,
+      "ret_medium": 0.7784,
+      "volatility": 0.8571428571,
+      "drawdown": 0.04,
+      "score": 0.3612,
+      "category": "gold",
+      "name": "IS PORTFOY ALTIN FONU",
+      "risk_value": 6.0,
+      "ret_3m": 0.16,
+      "ret_6m": 0.402,
+      "source": "cache"
+    },
+    "PPN": {
+      "code": "PPN",
+      "as_of": "2026-03-20",
+      "price": 4.8669,
+      "ret_short": 0.02875751,
+      "ret_medium": 0.5249,
+      "volatility": 0.1428571429,
+      "drawdown": 0.0,
+      "score": 0.2827,
+      "category": "cash",
+      "name": "NUROL PORTFOY PARA PIYASASI (TL) FONU",
+      "risk_value": 1.0,
+      "ret_3m": 0.083,
+      "ret_6m": 0.18,
+      "source": "cache"
+    }
+  },
+  "positions": {
+    "TTA": {
+      "code": "TTA",
+      "units": 3000.0,
+      "last_price": 1.0
+    },
+    "AFT": {
+      "code": "AFT",
+      "units": 4154.627722470153,
+      "last_price": 0.838944
+    },
+    "PPN": {
+      "code": "PPN",
+      "units": 722.1229119151822,
+      "last_price": 4.8669
+    }
+  }
 }

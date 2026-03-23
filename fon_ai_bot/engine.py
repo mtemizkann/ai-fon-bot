@@ -127,6 +127,13 @@ class AllocationEngine:
         if halted:
             warnings.append("portfoy zarar freni devrede, sistem savunma modunda")
 
+        stale_sources = [item for item in snapshots if item.source == "cache"]
+        if stale_sources:
+            warnings.append(
+                "canli veri yerine cache kullanildi: "
+                + ", ".join(f"{item.code} ({item.as_of.isoformat()})" for item in stale_sources[:4])
+            )
+
         for snapshot in ranked[:3]:
             category = rule_map.get(snapshot.code).category if snapshot.code in rule_map else snapshot.category
             if snapshot.code in target_weights and target_weights[snapshot.code] > 0.0:
