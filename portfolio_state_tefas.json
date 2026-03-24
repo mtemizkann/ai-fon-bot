@@ -1,9 +1,21 @@
 {
   "cash": 10000.0,
   "peak_value": 10000.0,
-  "last_report_hash": "",
+  "last_report_hash": "d0ba5b739eed9f9a3d3b5a990d867413abaf880425a531e441220ec1521f4aff",
   "order_history": [],
-  "performance_history": [],
+  "performance_history": [
+    {
+      "date": "2026-03-20",
+      "portfolio_value": 10000.0,
+      "drawdown": 0.0,
+      "halted": false,
+      "weights": {
+        "TTA": 0.3,
+        "AFT": 0.3485,
+        "PPN": 0.3515
+      }
+    }
+  ],
   "snapshot_cache": {
     "AFT": {
       "code": "AFT",
